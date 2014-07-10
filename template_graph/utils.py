@@ -1,25 +1,34 @@
-#!/usr/bin/python
-
-import sys
 import re
 from os import walk
 from functools import partial
+from collections import namedtuple
+
+from django.template.loaders.filesystem import Loader as FSLoader
+from django.conf import settings
 
 
+fs_loader = FSLoader()
+
+FILENAME_RE = re.compile("""['\\"](?P<fname>[^'"]+)""")
 EXTEND_RE = re.compile('\{\%\s*extends.+\%\}')
 INCLUDE_RE = re.compile('\{\%\s*include.+\%\}')
 
-PATTERNS = [
-    INCLUDE_RE, EXTEND_RE
-]
+INCLUDE_TAG = 'include'
+EXTEND_TAG = 'extends'
+
+PATTERNS = {
+    INCLUDE_TAG: INCLUDE_RE,
+    EXTEND_TAG: EXTEND_RE,
+}
+
+TemplateLine = namedtuple('TemplateLine', 'source target line_number tag_type')
+
 
 def filter_line(patterns, line):
-    for pattern in patterns:
+    for tag, pattern in patterns.items():
         if bool(pattern.search(line)):
-            return line
-    return None
-
-filter_line_by_patterns = partial(filter_line, PATTERNS)
+            return tag, line
+    return None, None
 
 
 def path_walker(path):
@@ -37,22 +46,41 @@ def line_reader(filename):
         yield ''
 
 
-def filter_lines_in_path_by_patterns(path, filters):
+def filter_lines_in_path_by_patterns(path, patterns):
+    filter_line_by_patterns = partial(filter_line, patterns)
     for filename in path_walker(path):
         for line_number, line in enumerate(line_reader(filename)):
-            if filter_line_by_patterns(line):
-                yield filename, line_number, line
+            tag, line = filter_line_by_patterns(line)
+            if line is not None:
+                yield filename, line_number, tag, line
 
 
-def main(path):
-    for filename, line_number, line in filter_lines_in_path_by_patterns(path, PATTERNS):
-        relative_filename = filename.replace(path, '')
-        path = '/'.join(relative_filename.split('/')[:-1])
-        print path, line
+def find_targets(line):
+    # TODO: Just uses FSLoader for now. Should also use app directories at least
+    target_search = FILENAME_RE.search(line)
+    if target_search is None:
+        return ()
+    else:
+        try:
+            target_value = target_search.groups()[0]
+        except IndexError:
+            return ()
+        else:
+            return fs_loader.get_template_sources(target_value)
+
+
+def stream_template_assocs(template_dirs, patterns):
+    for path in template_dirs:
+        filtered_lines = filter_lines_in_path_by_patterns(path, patterns)
+        for source, line_number, tag_type, line in filtered_lines:
+            for target in find_targets(line):
+                yield TemplateLine(source=source, target=target,
+                    tag_type=tag_type, line_number=line_number)
+
+
+get_stream = partial(stream_template_assocs, settings.TEMPLATE_DIRS, PATTERNS)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        main(sys.argv[1])
-    else:
-        print("Usage: python utils.py path")
+    for data in get_stream():
+        print data
