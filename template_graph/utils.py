@@ -1,6 +1,7 @@
 import re
 from os import walk
 from functools import partial
+from collections import namedtuple
 
 from django.template.loaders.filesystem import Loader as FSLoader
 from django.conf import settings
@@ -12,14 +13,15 @@ FILENAME_RE = re.compile("""['\\"](?P<fname>[^'"]+)""")
 EXTEND_RE = re.compile('\{\%\s*extends.+\%\}')
 INCLUDE_RE = re.compile('\{\%\s*include.+\%\}')
 
-INCLUDE_TAG = 0
-EXTEND_TAG = 1
+INCLUDE_TAG = 'include'
+EXTEND_TAG = 'extends'
 
 PATTERNS = {
     INCLUDE_TAG: INCLUDE_RE,
     EXTEND_TAG: EXTEND_RE,
 }
 
+TemplateLine = namedtuple('TemplateLine', 'source target line_number tag_type')
 
 
 def filter_line(patterns, line):
@@ -53,17 +55,6 @@ def filter_lines_in_path_by_patterns(path, patterns):
                 yield filename, line_number, tag, line
 
 
-def find_target_in_line(line):
-    target_search = FILENAME_RE.search(line)
-    if target_search is None:
-        return ''
-    else:
-        try:
-            return target_search.groups()[0]
-        except IndexError:
-            return ''
-
-
 def find_targets(line):
     # TODO: Just uses FSLoader for now. Should also use app directories at least
     target_search = FILENAME_RE.search(line)
@@ -81,15 +72,15 @@ def find_targets(line):
 def stream_template_assocs(template_dirs, patterns):
     for path in template_dirs:
         filtered_lines = filter_lines_in_path_by_patterns(path, patterns)
-        for filename, line_number, tag, line in filtered_lines:
+        for source, line_number, tag_type, line in filtered_lines:
             for target in find_targets(line):
-                yield tag, filename, line_number, target
+                yield TemplateLine(source=source, target=target,
+                    tag_type=tag_type, line_number=line_number)
 
 
-def main():
-    for tag, filename, line_number, target in stream_template_assocs(settings.TEMPLATE_DIRS, PATTERNS):
-        print filename, 'line:', line_number, tag, target
+get_stream = partial(stream_template_assocs, settings.TEMPLATE_DIRS, PATTERNS)
 
 
 if __name__ == '__main__':
-    main()
+    for data in get_stream():
+        print data
