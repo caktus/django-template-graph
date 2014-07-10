@@ -12,43 +12,36 @@ class TemplateGraphView(TemplateView):
         return ctx
 
     def get_tree(self):
-        return json.dumps({
-            1: {
+        return json.dumps([
+            {
                 'id': 1,
-                'parent': None,
                 'file_path': '../templates/example1.html',
                 'includes': [],
                 'children': [
                     {
-                        4: {
-                            'id': 1,
-                            'parent': None,
-                            'file_path': '../templates/example2.html',
-                            'includes': [],
-                            'children': [],
-                        },
-                        5: {
-                            'id': 1,
-                            'parent': None,
-                            'file_path': '../templates/example3.html',
-                            'includes': [],
-                            'children': []
-                        }
+                        'id': 2,
+                        'file_path': '../templates/example2.html',
+                        'includes': [],
+                        'children': [],
+                    },
+                    {
+                        'id': 3,
+                        'file_path': '../templates/example3.html',
+                        'includes': [],
+                        'children': []
                     }
                 ]
             },
-            2: {
-                'id': 1,
-                'parent': None,
+            {
+                'id': 4,
                 'file_path': '../templates/example.html',
                 'includes': [],
                 'children': []
             },
-            3: {
-                'id': 1,
-                'parent': None,
+            {
+                'id': 5,
                 'file_path': '../templates/example.html',
                 'includes': [],
                 'children': [],
             }
-        })
+        ])
