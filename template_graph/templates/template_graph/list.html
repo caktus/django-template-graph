@@ -1,1 +1,37 @@
-{{ tree|safe }}
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="utf-8">
+    <title>Django Template Graph</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta-description %}{% endblock %}">
+    <meta name="author" content="{% block meta-author %}{% endblock %}">
+    <meta name="keywords" content="{% block meta-keywords %}{% endblock %}">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/graph.css' %}">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.dev.js"></script>
+    <script>
+        var templates_tree = {{ tree|safe }};
+    </script>
+</head>
+<body>
+    {% include 'template_graph/navbar.html' %}
+    <div class="row">
+        <div class="row">
+            <div class="col-md-12"  id="tree">
+                <p></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12"  id="template-tree">
+                <p></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="{% static 'js/graph.js' %}"></script>
+</body>
+</html>

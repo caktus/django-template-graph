@@ -15,33 +15,34 @@ class TemplateGraphView(TemplateView):
         return json.dumps([
             {
                 'id': 1,
-                'file_path': '../templates/example1.html',
+                'name': 'base.html',
                 'includes': [],
                 'children': [
                     {
                         'id': 2,
-                        'file_path': '../templates/example2.html',
+                        'name': 'example2.html',
                         'includes': [],
-                        'children': [],
+                        'children': [
+                            {
+                                'id': 4,
+                                'name': 'example4.html',
+                                'includes': [],
+                                'children': [],
+                            },
+                            {
+                                'id': 5,
+                                'name': 'example5.html',
+                                'includes': [],
+                                'children': []
+                            }
+                        ]
                     },
                     {
                         'id': 3,
-                        'file_path': '../templates/example3.html',
+                        'name': 'example3.html',
                         'includes': [],
                         'children': []
                     }
                 ]
-            },
-            {
-                'id': 4,
-                'file_path': '../templates/example.html',
-                'includes': [],
-                'children': []
-            },
-            {
-                'id': 5,
-                'file_path': '../templates/example.html',
-                'includes': [],
-                'children': [],
             }
         ])
