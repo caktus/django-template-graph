@@ -78,9 +78,13 @@ def stream_template_assocs(template_dirs, patterns):
                     tag_type=tag_type, line_number=line_number)
 
 
-get_stream = partial(stream_template_assocs, settings.TEMPLATE_DIRS, PATTERNS)
+"""
+Top level generator that other modules should import and use directly
+"""
+get_template_line_stream = partial(
+    stream_template_assocs, settings.TEMPLATE_DIRS, PATTERNS)
 
 
 if __name__ == '__main__':
-    for data in get_stream():
+    for data in get_template_line_stream():
         print data
