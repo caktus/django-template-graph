@@ -143,6 +143,7 @@ class Node(object):
         return {
             'id': self.id,
             'parent': self.parent,
+            'filename': self.filename,
             'includes': [i.as_dict() for i in self.includes],
             'children': [c.as_dict() for c in self.children]
         }
@@ -165,4 +166,4 @@ get_tree_json = lambda: json.dumps(list(get_tree_data()))
 
 
 if __name__ == '__main__':
-    print get_tree_json()
+    print json.dumps(list(get_tree_data()), indent=4)
