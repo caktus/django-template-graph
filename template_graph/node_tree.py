@@ -1,4 +1,5 @@
 import json
+import os
 
 from template_graph.line_stream import get_template_line_stream
 
@@ -37,7 +38,7 @@ class NodeRegistry(object):
         filename = getattr(line, attribute)
         node = self.filename_id_registry.get(filename, None)
         if node is None:
-            node = Node(self.__class__._max_val, filename)
+            node = Node(self.__class__._max_val, filename, line.path)
             self.__class__._max_val += 1
         return node
 
@@ -122,7 +123,7 @@ class NodeRegistry(object):
         Walk each node in the tree and return a dictionary representation of
         each
         """
-        return (node.as_dict() for node in self.walk_nodes())
+        return dict((node.get_appname(), node.as_dict()) for node in self.walk_nodes())
 
 
 class Node(object):
@@ -130,19 +131,33 @@ class Node(object):
     Stores the id, filename and associates for each node
     """
 
-    def __init__(self, id, filename):
+    def __init__(self, id, filename, path):
         self.id = id
         self.filename = filename
+        self.path = path
         self.parent = None
         self.children_ids = []
         self.children = []
         self.include_ids = []
         self.includes = []
 
+    @property
+    def name(self):
+        return os.path.relpath(self.filename, self.path)
+
+    def get_appname(self):
+        try:
+            app_name = os.path.split(self.name)[0]
+        except IndexError:
+            return 'Unknown?'
+        else:
+            return app_name if app_name else '/'
+
     def as_dict(self):
         return {
             'id': self.id,
             'parent': self.parent,
+            'name': self.name,
             'filename': self.filename,
             'includes': [i.as_dict() for i in self.includes],
             'children': [c.as_dict() for c in self.children]
@@ -162,8 +177,8 @@ def get_node_registry():
 # Returns a list of dictionaries of Node data
 get_tree_data = lambda: get_node_registry().walk()
 # Returns the tree data in JSON
-get_tree_json = lambda: json.dumps(list(get_tree_data()))
+get_tree_json = lambda: json.dumps(get_tree_data())
 
 
 if __name__ == '__main__':
-    print json.dumps(list(get_tree_data()), indent=4)
+    print json.dumps(get_tree_data(), indent=4)
