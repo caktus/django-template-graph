@@ -46,6 +46,27 @@ Add a template_graph entry to your root urls.py::
 Ideally, you wrap the above url conditionally on ``settings.DEBUG = True`` to
 enforce that it is available in development environments only
 
+Configuration
+------------------------------------
+
+The default behavior of django-template-graph is to generate the graph data for
+the project its in on each request. This is sufficient for medium to small size
+projects and takes at most one or two seconds. For large projects, the
+performance might be unacceptable. For these, a flat file can pre-generated and
+served to avoid the wait time. To configure a project this way, set the
+TEMPLATE_GRAPH_PATH setting to a path that should store this file. The file
+will be named template_graph.json. If this is done, it is a good idea to add
+this file to .gitignore or similar in the same way that files like ctags are
+often handled.
+
+With TEMPLATE_GRAPH_PATH set, likely to a root project directory, the view will
+automatically generate this file if it is not present. To regenerate it run::
+
+django-admin.py template_graph_gen
+
+To use a per request behavior, simply do not set TEMPLATE_GRAPH_PATH or set it
+to None
+
 Running the Tests
 ------------------------------------
 
