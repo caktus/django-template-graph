@@ -1,6 +1,6 @@
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
     width = "100%",
-    height = 600 - margin.top - margin.bottom,
+    height = 750 - margin.top - margin.bottom,
     $apps = $(".apps");
 
 var i = 0,
@@ -58,7 +58,7 @@ function update(source) {
 
   nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? 10 : 10; })
-      .attr("y", function(d) { return d.children || d._children ? -20 : 10; })
+      .attr("y", function(d) { return d.children || d._children ? -10 : 10; })
       .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       .text(function(d) { return d.name; })
@@ -70,7 +70,7 @@ function update(source) {
       .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
   nodeUpdate.select("circle")
-      .attr("r", 7.5)
+      .attr("r", 3.5)
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
   nodeUpdate.select("text")
@@ -125,10 +125,15 @@ function update_includes(d) {
     var $modal = $("#modal"),
         $modal_body = $modal.find('.modal-body');
     $modal.modal();
-    console.log(d.children)
-    $.each(d.children, function(index, node) {
-        $modal_body.append(node.filename);
-    });
+    $modal_body.html('');
+    debugger;
+    if (d.children) {
+        $.each(d.children, function(index, node) {
+            $modal_body.append('<p>' + node.name + '</p>');
+        });
+    } else {
+        $modal_body.append('<p class="alert">This templates does not have any includes.</p>');
+    }
 
 }
 // Toggle children on click.
