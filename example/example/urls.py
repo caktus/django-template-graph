@@ -8,5 +8,5 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^template-graph/', include('template_graph.urls')),
+    url(r'^', include('template_graph.urls')),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
