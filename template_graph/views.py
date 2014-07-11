@@ -1,6 +1,6 @@
-import json
-
 from django.views.generic import TemplateView
+
+from template_graph.node_tree import get_tree_json
 
 
 class TemplateGraphView(TemplateView):
@@ -12,37 +12,4 @@ class TemplateGraphView(TemplateView):
         return ctx
 
     def get_tree(self):
-        return json.dumps([
-            {
-                'id': 1,
-                'name': 'base.html',
-                'includes': [],
-                'children': [
-                    {
-                        'id': 2,
-                        'name': 'example2.html',
-                        'includes': [],
-                        'children': [
-                            {
-                                'id': 4,
-                                'name': 'example4.html',
-                                'includes': [],
-                                'children': [],
-                            },
-                            {
-                                'id': 5,
-                                'name': 'example5.html',
-                                'includes': [],
-                                'children': []
-                            }
-                        ]
-                    },
-                    {
-                        'id': 3,
-                        'name': 'example3.html',
-                        'includes': [],
-                        'children': []
-                    }
-                ]
-            }
-        ])
+        return get_tree_json()
