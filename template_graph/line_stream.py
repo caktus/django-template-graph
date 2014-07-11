@@ -36,7 +36,8 @@ PATTERNS = {
     EXTEND_TAG: EXTEND_RE,
 }
 
-TemplateLine = namedtuple('TemplateLine', 'source target line_number tag_type')
+TemplateLine = namedtuple('TemplateLine',
+    'source target line_number tag_type path')
 
 
 def filter_line(patterns, line):
@@ -94,7 +95,7 @@ def stream_template_assocs(template_dirs, patterns):
             target = find_targets(line)
             if target is not None:
                 yield TemplateLine(source=source, target=target,
-                    tag_type=tag_type, line_number=line_number)
+                    tag_type=tag_type, line_number=line_number, path=path)
 
 
 """
