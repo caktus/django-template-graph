@@ -1,17 +1,42 @@
-template_graph
+Django Template Graph
 ========================
 
-Welcome to the documentation for django-template_graph!
+Welcome to the documentation for django-template-graph
 
 Overview
 ------------------------------------
 
-Django-template-graph is debugging/data-visualization tool for front-end
+django-template-graph is debugging/data-visualization tool for front-end
 developers working with Django that charts template hierarchies (extends tags)
 and includes.
 
 The project is in a very early experimental state but should be functional
 soon.
+
+Requirements
+------------------------------------
+The only requirement for this project is Django. The project was built against
+Django1.6. Other versions likely work but are yet to be tested and officially
+supported.
+
+Installation
+------------------------------------
+
+django-template-graph is not available on Pypi yet. The easiest way to install
+it is with a pip source checkout from github
+
+Setup
+------------------------------------
+Add 'template_graph' to the INSTALLED_APPS iterable in your settings file. For example::
+
+    INSTALLED_APPS = (
+        ...
+        'template_graph',
+        ...
+    )
+
+Add ``DEBUG = True`` to your local or development settings if it is not already
+set.
 
 Running the Tests
 ------------------------------------
