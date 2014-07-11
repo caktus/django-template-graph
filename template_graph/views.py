@@ -2,6 +2,7 @@ from django.views.generic import TemplateView
 
 from template_graph.node_tree import get_tree_json
 
+
 class TemplateGraphView(TemplateView):
     template_name = 'template_graph/list.html'
 
