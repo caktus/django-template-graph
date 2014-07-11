@@ -8,5 +8,5 @@ urlpatterns = patterns('')
 
 if settings.DEBUG:
     urlpatterns += patterns('',
-        url(r'^$', TemplateGraphView.as_view()),
+        url(r'^', TemplateGraphView.as_view()),
     )

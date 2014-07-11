@@ -1,10 +1,16 @@
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
-    width = $(window).width() - margin.right - margin.left,
-    height = 600 - margin.top - margin.bottom;
+    width = 700 - margin.right - margin.left,
+    height = 600 - margin.top - margin.bottom,
+    $apps = $(".apps");
 
 var i = 0,
     duration = 750,
     root;
+
+// render menu
+for (var key in templates_tree) {
+    $apps.append('<p><a href="#"' + key + '">' + key + '</a></p>');
+}
 
 var tree = d3.layout.tree()
     .size([height, width]);
@@ -18,21 +24,12 @@ var svg = d3.select("#tree").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-$.each(templates_tree, function(index, node) {
-  root = node;
-  root.x0 = height / 2;
-  root.y0 = 0;
-
-  function collapse(d) {
-    if (d.children) {
-      d._children = d.children;
-      d._children.forEach(collapse);
-      d.children = null;
-    }
-  }
-
-  update(root);
-});
+function render_tree(app_name) {
+    root = templates_tree[app_name];
+    root.x0 = height / 2;
+    root.y0 = 0;
+    update(root);
+}
 
 d3.select(self.frameElement).style("height", "600px");
 
@@ -61,7 +58,7 @@ function update(source) {
 
   nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? 10 : 10; })
-      .attr("y", function(d) { return d.children || d._children ? -10 : 10; })
+      .attr("y", function(d) { return d.children || d._children ? -20 : 10; })
       .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       .text(function(d) { return d.name; })
@@ -73,7 +70,7 @@ function update(source) {
       .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
   nodeUpdate.select("circle")
-      .attr("r", 4.5)
+      .attr("r", 7.5)
       .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
 
   nodeUpdate.select("text")
@@ -128,6 +125,7 @@ function update_includes(d) {
     var $modal = $("#modal"),
         $modal_body = $modal.find('.modal-body');
     $modal.modal();
+    console.log(d.children)
     $.each(d.children, function(index, node) {
         $modal_body.append(node.filename);
     });
@@ -137,3 +135,11 @@ function update_includes(d) {
 function click(d) {
   update_includes(d);
 }
+
+$(document).ready(function() {
+   $('.apps a').click(function (){
+       var app_name = $(this).text();
+       render_tree(app_name);
+   });
+   $('.apps a').first().trigger('click');
+});
