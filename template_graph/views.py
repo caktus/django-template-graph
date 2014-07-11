@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 
-from template_graph.node_tree import get_tree_json
+from template_graph.utils import fetch_or_create_tree_json
 
 
 class TemplateGraphView(TemplateView):
@@ -12,4 +12,4 @@ class TemplateGraphView(TemplateView):
         return ctx
 
     def get_tree(self):
-        return get_tree_json()
+        return fetch_or_create_tree_json()

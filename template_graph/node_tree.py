@@ -177,8 +177,8 @@ def get_node_registry():
 # Returns a list of dictionaries of Node data
 get_tree_data = lambda: get_node_registry().walk()
 # Returns the tree data in JSON
-get_tree_json = lambda: json.dumps(get_tree_data())
-
+get_tree_json = lambda: json.dumps(get_tree_data(), indent=4)
+get_tree_json_min = lambda: json.dumps(get_tree_data(), separators=(',', ':',))
 
 if __name__ == '__main__':
-    print json.dumps(get_tree_data(), indent=4)
+    print get_tree_json()
