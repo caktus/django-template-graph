@@ -1,6 +1,6 @@
 import json
 
-from template_graph.utils import get_template_line_stream
+from template_graph.line_stream import get_template_line_stream
 
 
 class NodeRegistry(object):
@@ -48,27 +48,32 @@ class NodeRegistry(object):
         return self._get_or_create_node(line, 'target')
 
     def _update_registries(self, line, node, target):
+        """
+        Takes a template line, a source node and a target node
+        and updates the internal mappings with updated nodes from
+        the add method
+        """
         self.filename_id_registry[line.source] = node
         self.filename_id_registry[line.target] = target
         self.id_node_registry[node.id] = node
         self.id_node_registry[target.id] = target
 
     def add(self, line):
+        """
+        Given a TemplateLine `line` from line_stream.get_template_line_stream,
+        creates and/or updates existing nodes in the registry as needed
+        """
         node = self._get_or_create_source_node(line)
         target = self._get_or_create_target_node(line)
         if line.tag_type == 'extends':
             node.parent = target.id
+            target.children_ids.append(node.id)
             if node.id in self.root_node_ids:
                 self.root_node_ids.remove(node.id)
-            target.children_ids.append(node.id)
             if target.parent is None:
                 self.root_node_ids.add(target.id)
         if line.tag_type == 'include':
-            node.includes.append(target.id)
-            if node.parent is not None and node.id in self.root_node_ids:
-                self.root_node_ids.remove(node.id)
-            if target.parent is None:
-                self.root_node_ids.add(target.id)
+            node.include_ids.append(target.id)
         self._update_registries(line, node, target)
 
     def fill_children(self, node):
@@ -81,7 +86,23 @@ class NodeRegistry(object):
             child_node = self.id_node_registry[child_id]
             if child_node.children_ids != []:
                 child_node = self.fill_children(child_node)
+            # Fill each child's includes as needed
+            if child_node.include_ids != []:
+                child_node = self.fill_includes(child_node)
             node.children.append(child_node)
+        return node
+
+    def fill_includes(self, node):
+        """
+        Use include_ids of a given node to fill its includes list with node
+        objects. Vist each of these include nodes and fill their include list
+        with nodes as well until leaf nodes are reached
+        """
+        for inc_id in node.include_ids:
+            inc_node = self.id_node_registry[inc_id]
+            if inc_node.include_ids != []:
+                inc_node = self.fill_includes(inc_node)
+            node.includes.append(inc_node)
         return node
 
     def walk_nodes(self):
@@ -89,8 +110,11 @@ class NodeRegistry(object):
         Walk the root nodes, fill their children with data and return them
         """
         for node_id in self.root_node_ids:
-            # Calls fill_children for its side-effect, returns the altered node
-            node = self.fill_children(self.id_node_registry[node_id])
+            node = self.id_node_registry[node_id]
+            # Calls fill_includes and fill_children for their side-effect, each
+            # returns the altered node
+            node = self.fill_includes(node)
+            node = self.fill_children(node)
             yield node
 
     def walk(self):
@@ -112,13 +136,14 @@ class Node(object):
         self.parent = None
         self.children_ids = []
         self.children = []
+        self.include_ids = []
         self.includes = []
 
     def as_dict(self):
         return {
             'id': self.id,
             'parent': self.parent,
-            'includes': self.includes,
+            'includes': [i.as_dict() for i in self.includes],
             'children': [c.as_dict() for c in self.children]
         }
 
