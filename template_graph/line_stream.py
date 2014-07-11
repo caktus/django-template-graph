@@ -4,22 +4,23 @@ from os.path import exists as path_exists
 from functools import partial
 from collections import namedtuple
 
-from django.template.loaders.filesystem import Loader as FSLoader
-from django.template.loaders.app_directories import Loader as AppLoader
+from django.template.loader import find_template_loader
 from django.template.loaders.app_directories import app_template_dirs
 from django.conf import settings
 
 
 def get_template_loaders_dirs():
+    fs_loader_module = 'django.template.loaders.filesystem.Loader'
+    app_loader_module = 'django.template.loaders.app_directories.Loader'
     loader_configs = settings.TEMPLATE_LOADERS
     dirs = ()
     loaders = []
-    if 'django.template.loaders.filesystem.Loader' in loader_configs:
+    if fs_loader_module in loader_configs:
         dirs += settings.TEMPLATE_DIRS
-        loaders.append(FSLoader())
-    if 'django.template.loaders.app_directories.Loader' in loader_configs:
+        loaders.append(find_template_loader(fs_loader_module))
+    if app_loader_module in loader_configs:
         dirs += app_template_dirs
-        loaders.append(AppLoader())
+        loaders.append(find_template_loader(app_loader_module))
     return loaders, dirs
 
 TLOADERS, TDIRS = get_template_loaders_dirs()
@@ -72,7 +73,6 @@ def filter_lines_in_path_by_patterns(path, patterns):
 
 
 def find_targets(line):
-    # TODO: Just uses FSLoader for now. Should also use app directories at least
     target_search = FILENAME_RE.search(line)
     if target_search is None:
         return None
