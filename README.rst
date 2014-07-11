@@ -10,6 +10,10 @@ django-template-graph is debugging/data-visualization tool for front-end
 developers working with Django that charts template hierarchies (extends tags)
 and includes.
 
+At least at the moment, only extend tags and include tags that use strings
+directly are considered. As a result, include tags or tags that use a variable
+are skipped.
+
 The project is in a very early experimental state but should be functional
 soon.
 
