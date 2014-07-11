@@ -126,9 +126,8 @@ function update_includes(d) {
         $modal_body = $modal.find('.modal-body');
     $modal.modal();
     $modal_body.html('');
-    debugger;
-    if (d.children) {
-        $.each(d.children, function(index, node) {
+    if (d.includes.length > 0) {
+        $.each(d.includes, function(index, node) {
             $modal_body.append('<p>' + node.name + '</p>');
         });
     } else {
