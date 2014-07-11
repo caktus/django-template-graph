@@ -39,8 +39,12 @@ Add 'template_graph' to the INSTALLED_APPS iterable in your settings file. For e
         ...
     )
 
-Add ``DEBUG = True`` to your local or development settings if it is not already
-set.
+Add a template_graph entry to your root urls.py::
+
+    url(r'^template-graph/$', include('template_graph.urls')),
+
+Ideally, you wrap the above url conditionally on ``settings.DEBUG = True`` to
+enforce that it is available in development environments only
 
 Running the Tests
 ------------------------------------
