@@ -1,6 +1,6 @@
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
     width = $(window).width() - margin.right - margin.left,
-    height = 400 - margin.top - margin.bottom;
+    height = 600 - margin.top - margin.bottom;
 
 var i = 0,
     duration = 750,
@@ -34,7 +34,7 @@ $.each(templates_tree, function(index, node) {
   update(root);
 });
 
-d3.select(self.frameElement).style("height", "400px");
+d3.select(self.frameElement).style("height", "600px");
 
 function update(source) {
 
@@ -126,7 +126,7 @@ function update(source) {
 
 function update_includes(d) {
     var $modal = $("#modal"),
-        $modal_body = modal.find('.modal-body');
+        $modal_body = $modal.find('.modal-body');
     $modal.modal();
     $.each(d.children, function(index, node) {
         $modal_body.append(node.filename);
