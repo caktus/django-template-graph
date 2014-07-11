@@ -31,7 +31,6 @@ $.each(templates_tree, function(index, node) {
     }
   }
 
-  root.children.forEach(collapse);
   update(root);
 });
 
@@ -65,7 +64,7 @@ function update(source) {
       .attr("y", function(d) { return d.children || d._children ? -10 : 10; })
       .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-      .text(function(d) { return d.name; })
+      .text(function(d) { return d.filename; })
       .style("fill-opacity", 1e-6);
 
   // Transition nodes to their new position.
@@ -125,14 +124,16 @@ function update(source) {
   });
 }
 
+function update_includes(d) {
+    var $modal = $("#modal"),
+        $modal_body = modal.find('.modal-body');
+    $modal.modal();
+    $.each(d.children, function(index, node) {
+        $modal_body.append(node.filename);
+    });
+
+}
 // Toggle children on click.
 function click(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else {
-    d.children = d._children;
-    d._children = null;
-  }
-  update(d);
+  update_includes(d);
 }
