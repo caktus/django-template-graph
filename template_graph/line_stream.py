@@ -26,6 +26,8 @@ def get_template_loaders_dirs():
 TLOADERS, TDIRS = get_template_loaders_dirs()
 
 FILENAME_RE = re.compile("""['\\"](?P<fname>[^'"]+)""")
+VARIABLE_RE = re.compile("""\{\%\s*\w+\s+(?P<vname>[^\s\%]+)""")
+
 EXTEND_RE = re.compile('\{\%\s*extends.+\%\}')
 INCLUDE_RE = re.compile('\{\%\s*include.+\%\}')
 
@@ -73,9 +75,19 @@ def filter_lines_in_path_by_patterns(path, patterns):
 
 
 def find_targets(line):
+    """
+    Finds the full filename for a reference to a template on the line if it
+    references a string. Otherwise, returns the variable name the tag refers
+    to.
+    """
     target_search = FILENAME_RE.search(line)
     if target_search is None:
-        return None
+        target_search = VARIABLE_RE.search(line)
+        try:
+            target_value = target_search.groups()[0]
+        except IndexError:
+            return None
+        return 'variable:' + target_value
     else:
         try:
             target_value = target_search.groups()[0]

@@ -143,7 +143,10 @@ class Node(object):
 
     @property
     def name(self):
-        return os.path.relpath(self.filename, self.path)
+        if self.filename.startswith('variable:'):
+            return self.filename
+        else:
+            return os.path.relpath(self.filename, self.path)
 
     def get_appname(self):
         try:
