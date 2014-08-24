@@ -184,4 +184,4 @@ get_tree_json = lambda: json.dumps(get_tree_data(), indent=4)
 get_tree_json_min = lambda: json.dumps(get_tree_data(), separators=(',', ':',))
 
 if __name__ == '__main__':
-    print get_tree_json()
+    print(get_tree_json())

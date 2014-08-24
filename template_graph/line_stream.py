@@ -61,7 +61,7 @@ def line_reader(filename):
         with open(filename) as f:
             for line in f:
                 yield line.strip()
-    except IOError:
+    except (IOError, UnicodeDecodeError):
         yield ''
 
 
@@ -119,4 +119,4 @@ get_template_line_stream = partial(
 
 if __name__ == '__main__':
     for data in get_template_line_stream():
-        print data
+        print(data)
