@@ -10,28 +10,23 @@ django-template-graph is debugging/data-visualization tool for front-end
 developers working with Django that charts template hierarchies (extends tags)
 and includes.
 
-At least at the moment, only extend tags and include tags that use strings
-directly are considered. As a result, include tags or tags that use a variable
-are skipped.
-
-The project is in a very early experimental state but should be functional
-soon.
+Include or extends tags that use a variable are displayed as "var:variable"
+where variable is the variable used in the template.
 
 Requirements
 ------------------------------------
-The only requirement for this project is Django. The project was built against
-Django1.6. Other versions likely work but are yet to be tested and officially
-supported.
+The only requirement for this project is Django>=1.3.
 
 Installation
 ------------------------------------
 
 django-template-graph is not available on Pypi yet. The easiest way to install
-it is with a pip source checkout from github
+it is with a pip source checkout from github.
 
 Setup
 ------------------------------------
-Add 'template_graph' to the INSTALLED_APPS iterable in your settings file. For example::
+Add 'template_graph' to the INSTALLED_APPS iterable in your settings file. For
+example::
 
     INSTALLED_APPS = (
         ...
@@ -39,30 +34,36 @@ Add 'template_graph' to the INSTALLED_APPS iterable in your settings file. For e
         ...
     )
 
-Add a template_graph entry to your root urls.py::
+Add a template_graph entry to your root urls.py conditionally on
+settings.DEBUG::
 
-    url(r'^template-graph/$', include('template_graph.urls')),
+    from django.conf import settings
+    from django.conf.urls import patterns, include, url
 
-Ideally, you wrap the above url conditionally on ``settings.DEBUG = True`` to
-enforce that it is available in development environments only
+    urlpatterns = patterns(
+        ...
+    )
+    if settings.DEBUG:
+        urlpatterns += patterns(
+            url(r'^template-graph/$', include('template_graph.urls')),
+        )
 
 Configuration
 ------------------------------------
 
 The default behavior of django-template-graph is to generate the graph data for
-the project its in on each request. This is sufficient for medium to small size
-projects and takes at most one or two seconds. For large projects, the
-performance might be unacceptable. For these, a flat file can pre-generated and
-served to avoid the wait time. To configure a project this way, set the
-TEMPLATE_GRAPH_PATH setting to a path that should store this file. The file
-will be named template_graph.json. If this is done, it is a good idea to add
-this file to .gitignore or similar in the same way that files like ctags are
-often handled.
+each request. This is sufficient for medium to small size projects and takes at
+most one or two seconds. For large projects, the performance might be
+unacceptable. For these, a flat file can pre-generated and served to avoid the
+wait time. To configure a project this way, set the TEMPLATE_GRAPH_PATH setting
+to a path that should store this file. The file will be named
+template_graph.json. It is a good idea to add this file to .gitignore or
+similar in the same way that files like tags are often handled.
 
 With TEMPLATE_GRAPH_PATH set, likely to a root project directory, the view will
 automatically generate this file if it is not present. To regenerate it run::
 
-django-admin.py template_graph_gen
+    django-admin.py template_graph_gen
 
 To use a per request behavior, simply do not set TEMPLATE_GRAPH_PATH or set it
 to None
@@ -70,7 +71,7 @@ to None
 Running the Tests
 ------------------------------------
 
-You can run the tests with via::
+You can run the tests for this project with::
 
     python setup.py test
 
