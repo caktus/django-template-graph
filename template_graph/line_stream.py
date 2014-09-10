@@ -9,10 +9,30 @@ from django.template.loaders.app_directories import app_template_dirs
 from django.conf import settings
 
 
+from collections import Iterable
+
+
+try:
+    from django.utils.six import string_types
+except ImportError:
+    # Django < 1.5. No Python 3 support
+    string_types = basestring
+
+
+def flatten(iterable):
+    """ Given an iterable with nested iterables, generate a flat iterable """
+    for i in iterable:
+        if isinstance(i, Iterable) and not isinstance(i, string_types):
+            for sub_i in flatten(i):
+                yield sub_i
+        else:
+            yield i
+
+
 def get_template_loaders_dirs():
     fs_loader_module = 'django.template.loaders.filesystem.Loader'
     app_loader_module = 'django.template.loaders.app_directories.Loader'
-    loader_configs = settings.TEMPLATE_LOADERS
+    loader_configs = set(flatten(settings.TEMPLATE_LOADERS))
     dirs = ()
     loaders = []
     if fs_loader_module in loader_configs:
