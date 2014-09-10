@@ -48,8 +48,8 @@ TLOADERS, TDIRS = get_template_loaders_dirs()
 FILENAME_RE = re.compile("""['\\"](?P<fname>[^'"]+)""")
 VARIABLE_RE = re.compile("""\{\%\s*\w+\s+(?P<vname>[^\s\%]+)""")
 
-EXTEND_RE = re.compile('\{\%\s*extends.+\%\}')
-INCLUDE_RE = re.compile('\{\%\s*include.+\%\}')
+EXTEND_RE = re.compile('\{\%\s*extends .+\%\}')
+INCLUDE_RE = re.compile('\{\%\s*include .+\%\}')
 
 INCLUDE_TAG = 'include'
 EXTEND_TAG = 'extends'
@@ -105,7 +105,7 @@ def find_targets(line):
         target_search = VARIABLE_RE.search(line)
         try:
             target_value = target_search.groups()[0]
-        except IndexError:
+        except (AttributeError, IndexError):
             return None
         return 'variable:' + target_value
     else:
