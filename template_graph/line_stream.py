@@ -50,24 +50,30 @@ VARIABLE_RE = re.compile("""\{\%\s*\w+\s+(?P<vname>[^\s\%]+)""")
 
 EXTEND_RE = re.compile('\{\%\s*extends .+\%\}')
 INCLUDE_RE = re.compile('\{\%\s*include .+\%\}')
+BLOCK_RE = re.compile('\{\%\s*block .+\%\}')
 
 INCLUDE_TAG = 'include'
 EXTEND_TAG = 'extends'
+BLOCK_TAG = 'block'
+TARGET_TAG_TYPES = set([INCLUDE_TAG, EXTEND_TAG])
+
+NO_TAG = 'none'
 
 PATTERNS = {
     INCLUDE_TAG: INCLUDE_RE,
     EXTEND_TAG: EXTEND_RE,
+    BLOCK_TAG: BLOCK_RE,
 }
 
-TemplateLine = namedtuple('TemplateLine',
+TemplateInfo = namedtuple('TemplateInfo',
     'source target line_number tag_type path')
 
 
 def filter_line(patterns, line):
     for tag, pattern in patterns.items():
         if bool(pattern.search(line)):
-            return tag, line
-    return None, None
+            return tag
+    return None
 
 
 def path_walker(path):
@@ -86,15 +92,26 @@ def line_reader(filename):
 
 
 def filter_lines_in_path_by_patterns(path, patterns):
+    """
+    Given a path, walk it recursively for template files and yield results for
+    any include or extend tags in the form of (filename, line_number, tag,
+    line string). For templates with neither, yield a result with 'none' tag so
+    it is still tracked/graphed.
+    """
     filter_line_by_patterns = partial(filter_line, patterns)
     for filename in path_walker(path):
+        tag_count = 0
         for line_number, line in enumerate(line_reader(filename)):
-            tag, line = filter_line_by_patterns(line)
-            if line is not None:
+            tag = filter_line_by_patterns(line)
+            if tag is not None:
+                tag_count += 1
                 yield filename, line_number, tag, line
+        # Also yield a value for templates with no includes/extends
+        if tag_count == 0:
+            yield filename, 0, NO_TAG, ''
 
 
-def find_targets(line):
+def find_targets(tag_type, line):
     """
     Finds the full filename for a reference to a template on the line if it
     references a string. Otherwise, returns the variable name the tag refers
@@ -107,6 +124,8 @@ def find_targets(line):
             target_value = target_search.groups()[0]
         except (AttributeError, IndexError):
             return None
+        if tag_type == BLOCK_TAG:
+            return target_value
         return 'variable:' + target_value
     else:
         try:
@@ -124,9 +143,13 @@ def stream_template_assocs(template_dirs, patterns):
     for path in template_dirs:
         filtered_lines = filter_lines_in_path_by_patterns(path, patterns)
         for source, line_number, tag_type, line in filtered_lines:
-            target = find_targets(line)
-            if target is not None:
-                yield TemplateLine(source=source, target=target,
+            if tag_type != NO_TAG:
+                target = find_targets(tag_type, line)
+                if target is not None:
+                    yield TemplateInfo(source=source, target=target,
+                        tag_type=tag_type, line_number=line_number, path=path)
+            else:
+                yield TemplateInfo(source=source, target=source,
                     tag_type=tag_type, line_number=line_number, path=path)
 
 
