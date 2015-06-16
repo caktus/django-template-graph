@@ -9,19 +9,23 @@ from template_graph.line_stream import (get_template_line_stream,
 
 
 class Graph(object):
+    """
+    Stores the overall graph, made of nodes with data about each template.
+
+    Contains extends and includes relations ships as lists of two-tuples
+    """
 
     def __init__(self):
         self.node_reg = NodeRegistry()
         # lists two tuples of includes
         self.include_edges = []
-        # lists trees of node ids
-        self.extend_trees = []
         # map of node id -> blocks that it defines
         self.blocks = defaultdict(list)
         # set of root nodes in extend hierarchies
         self.root_node_ids = set()
         # set of templates w/o extends or includes
         self.lone_node_ids = set()
+        self.extend_edges = []
         self.process()
 
     def process(self):
@@ -40,6 +44,7 @@ class Graph(object):
                     possible_root_ids.add(target.id)
                     not_root_ids.add(source.id)
                     extends[target.id].append(source.id)
+                    self.extend_edges.append((target.id, source.id))
                 if line.tag_type == INCLUDE_TAG:
                     self.include_edges.append((source.id, target.id))
             if line.tag_type == BLOCK_TAG:
@@ -48,36 +53,31 @@ class Graph(object):
                 possible_lone_node_ids.add(source.id)
         self.lone_node_ids = possible_lone_node_ids - connected_node_ids
         self.root_node_ids = possible_root_ids - not_root_ids
-        self.extend_trees = list(self.walk_extends(extends))
 
     @property
     def nodes(self):
-        return dict([(node_id, node.as_dict()) for node_id, node in self.node_reg.id_node_registry.iteritems()])
+        return dict([
+            (node_id, node.as_dict())
+            for node_id, node in self.node_reg.id_node_registry.iteritems()
+        ])
 
     def as_dict(self):
         return {
             'nodes': self.nodes,
             'lone_node_ids': list(self.lone_node_ids),
             'include_edges': self.include_edges,
-            'extend_trees': self.extend_trees,
+            'extend_edges': self.extend_edges,
             'blocks': self.blocks,
         }
 
     def as_json(self):
         return json.dumps(self.as_dict())
 
-    def _find_children(self, extends, node_id, results):
-        children = extends.get(node_id, [])
-        if children == []:
-            return results
-        for child_id in children:
-            results.append(child_id)
-            if extends.get(child_id):
-                results.append(self._find_children(extends, child_id, []))
-        return results
-
-    def walk_extends(self, extends):
-        return ([node_id, self._find_children(extends, node_id, [])] for node_id in self.root_node_ids)
+    def digraph(self):
+        yield('digraph Extends {')
+        for edge in self.extend_edges:
+            yield('    "{0}" -> "{1}"'.format(*map(lambda e: self.nodes[e]['name'], edge)))
+        yield('}')
 
 
 class NodeRegistry(object):
