@@ -1,6 +1,5 @@
 import os
 import json
-from pprint import pprint
 
 from collections import defaultdict
 
@@ -12,11 +11,13 @@ class Graph(object):
     """
     Stores the overall graph, made of nodes with data about each template.
 
-    Contains extends and includes relations ships as lists of two-tuples
+    Contains extends and includes relationships as lists of two-tuples
     """
 
     def __init__(self):
         self.node_reg = NodeRegistry()
+        # lists two tuples of extends
+        self.extend_edges = []
         # lists two tuples of includes
         self.include_edges = []
         # map of node id -> blocks that it defines
@@ -25,10 +26,14 @@ class Graph(object):
         self.root_node_ids = set()
         # set of templates w/o extends or includes
         self.lone_node_ids = set()
-        self.extend_edges = []
-        self.process()
+        # map of node id -> information about each node
+        self.nodes = {}
+        # A string holding the Graphviz digraph of extends/includes
+        self.digraph = ''
+        # Initiate building of graph object
+        self._process()
 
-    def process(self):
+    def _process(self):
         connected_node_ids = set()
         possible_lone_node_ids = set()
         possible_root_ids = set()
@@ -53,42 +58,51 @@ class Graph(object):
                 possible_lone_node_ids.add(source.id)
         self.lone_node_ids = possible_lone_node_ids - connected_node_ids
         self.root_node_ids = possible_root_ids - not_root_ids
+        self.nodes = self._create_nodes()
+        self.digraph = ''.join(self._digraph_gen())
 
-    @property
-    def nodes(self):
+    def _create_nodes(self):
         return dict([
             (node_id, node.as_dict())
-            for node_id, node in self.node_reg.id_node_registry.iteritems()
+            for node_id, node in self.node_reg._id_node_registry.iteritems()
         ])
+
+    def _digraph_gen(self):
+        def node_name_finder(edge):
+            return self.nodes[edge]['name']
+        yield('digraph {')
+        for edge in self.extend_edges:
+            yield('    "{0}" -> "{1}"'.format(*map(node_name_finder, edge)))
+        for edge in self.include_edges:
+            yield('    "{0}" -> "{1}" [color=" 1.0 0.5 1.0"]'.format(
+                *map(node_name_finder, edge)))
+        yield('}')
 
     def as_dict(self):
         return {
             'nodes': self.nodes,
+            'digraph': self.digraph,
             'lone_node_ids': list(self.lone_node_ids),
+            'root_node_ids': list(self.root_node_ids),
             'include_edges': self.include_edges,
             'extend_edges': self.extend_edges,
             'blocks': self.blocks,
         }
 
+    @property
     def as_json(self):
         return json.dumps(self.as_dict())
-
-    def digraph(self):
-        yield('digraph Extends {')
-        for edge in self.extend_edges:
-            yield('    "{0}" -> "{1}"'.format(*map(lambda e: self.nodes[e]['name'], edge)))
-        yield('}')
 
 
 class NodeRegistry(object):
     """
     Acts as a factory to create nodes with unique id's per their filename and
-    path
+    path and a lookup table for nodes by id once created.
     """
 
     def __init__(self):
-        self.node_id = 0
-        self.id_node_registry = {}
+        self._node_id = 0
+        self._id_node_registry = {}
         self._filename_registry = {}
 
     def get_or_create_node(self, filename, path):
@@ -97,14 +111,18 @@ class NodeRegistry(object):
         if existing is not None:
             return existing
         else:
-            new_node = Node(self.node_id, filename, path)
-            self.id_node_registry[new_node.id] = new_node
+            new_node = Node(self._node_id, filename, path)
+            self._id_node_registry[new_node.id] = new_node
             self._filename_registry[key] = new_node
-            self.node_id += 1
+            self._node_id += 1
             return new_node
 
     def get_node_by_id(self, id):
-        return self.id_node_registry.get(id, None)
+        return self._id_node_registry.get(id, None)
+
+    def __iter__(self):
+        for k_v_pair in self._id_node_registry.iteritems():
+            yield k_v_pair
 
 
 class Node(object):
@@ -145,8 +163,3 @@ class Node(object):
             'filename': self.filename,
             'name': self.name,
         }
-
-
-if __name__ == '__main__':
-    graph = Graph()
-    pprint(graph.as_dict())
