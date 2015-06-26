@@ -163,3 +163,7 @@ class Node(object):
             'filename': self.filename,
             'name': self.name,
         }
+
+
+def get_graph_json():
+    return Graph().as_json

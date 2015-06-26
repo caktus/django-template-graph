@@ -10,19 +10,11 @@
     <meta name="keywords" content="{% block meta-keywords %}{% endblock %}">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/graph.css' %}">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.dev.js"></script>
-    <script>
-        var templates_tree = {{ tree|safe }};
-    </script>
 </head>
 <body>
     {% include 'template_graph/navbar.html' %}
     <div class="row">
         <div class="col-md-2" id="sidebar">
-            <h4>INSTALLED APPS</h4>
-            <div class="apps">
-
-            </div>
         </div>
         <div class="col-md-10">
             <div class="row">
@@ -34,10 +26,13 @@
     </div>
 
     {% include 'template_graph/modal.html' %}
-
+    <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.dev.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script>
+        var templates_tree = {{ tree|safe }};
+    </script>
+    <script src="{% static 'js/lib/viz.js' %}"></script>
     <script src="{% static 'js/graph.js' %}"></script>
 </body>
 </html>

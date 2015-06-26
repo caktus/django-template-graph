@@ -3,7 +3,8 @@ import os
 from django.core.management.base import NoArgsCommand
 from django.conf import settings
 
-from template_graph.node_tree import get_tree_json_min
+from template_graph.graph import get_graph_json
+
 
 class Command(NoArgsCommand):
     help = "Presaves a template graph to TEMPLATE_GRAPH_PATH"
@@ -12,7 +13,7 @@ class Command(NoArgsCommand):
         path = getattr(settings, 'TEMPLATE_GRAPH_PATH', None)
         if path is not None:
             with open(os.path.join(path, 'template_graph.json'), 'w') as f:
-                f.write(get_tree_json_min())
+                f.write(get_graph_json())
         else:
             print ('You must configure TEMPLATE_GRAPH_PATH if you want to '
                 'save template graph JSON files for faster rendering. '
