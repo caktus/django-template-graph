@@ -59,7 +59,7 @@ class Graph(object):
         self.lone_node_ids = possible_lone_node_ids - connected_node_ids
         self.root_node_ids = possible_root_ids - not_root_ids
         self.nodes = self._create_nodes()
-        self.digraph = ''.join(self._digraph_gen())
+        self.digraph = ''.join(self.digraph_gen())
 
     def _create_nodes(self):
         return dict([
@@ -67,7 +67,7 @@ class Graph(object):
             for node_id, node in self.node_reg._id_node_registry.iteritems()
         ])
 
-    def _digraph_gen(self):
+    def digraph_gen(self):
         def node_name_finder(edge):
             return self.nodes[edge]['name']
         yield('digraph {')
@@ -167,3 +167,6 @@ class Node(object):
 
 def get_graph_json():
     return Graph().as_json
+
+def get_digraph():
+    return ''.join(list(Graph().digraph_gen()))

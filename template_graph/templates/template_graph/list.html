@@ -18,7 +18,7 @@
         </div>
         <div class="col-md-10">
             <div class="row">
-                <div class="col-md-12"  id="tree">
+                <div class="col-md-12"  id="graph">
 
                 </div>
             </div>
@@ -29,10 +29,14 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.dev.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script>
-        var templates_tree = {{ tree|safe }};
-    </script>
     <script src="{% static 'js/lib/viz.js' %}"></script>
     <script src="{% static 'js/graph.js' %}"></script>
+    <script>
+        $(function() {
+            var digraph = "{{ digraph|escapejs }}";
+            var $graph_div = $('#graph');
+            create_graph(digraph, $graph_div);
+        }());
+    </script>
 </body>
 </html>

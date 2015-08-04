@@ -2,7 +2,7 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from django.http import Http404
 
-from template_graph.utils import fetch_or_create_tree_json
+from template_graph.graph import get_digraph
 
 
 class TemplateGraphView(TemplateView):
@@ -15,6 +15,6 @@ class TemplateGraphView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super(TemplateGraphView, self).get_context_data(**kwargs)
-        ctx['tree'] = fetch_or_create_tree_json()
+        ctx['digraph'] = get_digraph()
         return ctx
 
